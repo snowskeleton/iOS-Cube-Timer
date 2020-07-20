@@ -7,24 +7,78 @@
 //
 
 import SwiftUI
+import CoreData
+
 
 struct ContentView: View {
+    @Environment(\.managedObjectContext) var managedObjectContext
+    @FetchRequest(entity: Solve.entity(), sortDescriptors: []) var solves: FetchedResults<Solve>
+
+    let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
+    @State private var timeSpent = 0.0
+    @State private var updateTime = false
+    @State private var newScramble = false
+    @State private var timerColor = Color.black
+    @State private var permissionToLaunch = false
+    @State private var buttonImage = "start"
     @State var scramble: String
+
+
     var body: some View {
         VStack {
+            TopMenuView()
+
             Button(action: {
                 self.scramble = self.generateScramble()
             }) {
                 Text(scramble)
                     .bold()
                     .font(.system(size: 40))
+                    .padding()
             }
-            .padding()
+            
+            Spacer()
+            
+            Text("\(timeSpent, specifier: "%.2f")")
+                .font(.system(size: 60))
+                .foregroundColor(timerColor)
+            
+            Image(buttonImage)
+                .renderingMode(.original)
+                .cornerRadius(20)
+                .onLongPressGesture(minimumDuration: 200, maximumDistance: 1000000, pressing: { isPressed in
+                    if self.updateTime == false {
+                        if isPressed {
+                            self.buttonImage = "startPressed"
+                            self.timerColor = Color.yellow
+                        } else {
+                            self.buttonImage = "start"
+                            self.timerColor = Color.black
+                        }
+                        
+                        if self.permissionToLaunch {
+                            self.startTimer()
+                        }
+                    } else {
+                        self.stopTimer()
+                    }
+                }){}
+                .simultaneousGesture(LongPressGesture(minimumDuration: 1.0, maximumDistance: 1000000)
+                    .onEnded { _ in
+                        self.timerColor = Color.green
+                        self.permissionToLaunch = true
+                        self.newScramble = true
+                })
+
+            Spacer()
             Spacer()
         }
+        .onReceive(timer) { time in
+            if self.updateTime {
+                self.timeSpent += 0.01
+            }
+        }
     }
-    
-    
     func generateScramble() -> String {
         let moves = ["R", "L", "F", "B", "U", "D"]
         let opposites = ["L", "R", "B", "F", "D", "U"]
@@ -54,8 +108,32 @@ struct ContentView: View {
         let result = scramble.joined(separator: " ")
         return result
     }
-}
 
+    func startTimer() -> Void {
+        self.buttonImage = "stop"
+        self.timeSpent = 0.0
+        self.updateTime = true
+        self.timerColor = Color.black
+        self.permissionToLaunch = false
+    }
+
+    func stopTimer() -> Void {
+        self.updateTime = false
+        
+        if self.newScramble {
+            let solve = Solve(context: self.managedObjectContext)
+            solve.moves = self.scramble
+            solve.time = self.timeSpent
+            solve.timestamp = Date()
+            try? self.managedObjectContext.save()
+            self.scramble = self.generateScramble()
+        }
+        
+        self.buttonImage = "start"
+        self.newScramble = false
+    }
+
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
