@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SingleScrambleView: View {
     var time: Double
-    var date: String
+    var timeStamp: String
     var moves: String
     
     var body: some View {
@@ -21,7 +21,7 @@ struct SingleScrambleView: View {
                     .font(.system(size: 12))
             }
             
-            Text("\(date)")
+            Text("\(timeStamp)")
                 .font(.system(size: 8))
         }
     }
@@ -29,6 +29,6 @@ struct SingleScrambleView: View {
 
 struct SingleScrambleView_Previews: PreviewProvider {
     static var previews: some View {
-        SingleScrambleView(time: 4.20, date: "2020-07-17 02:51:43", moves: "R U R' U'")
+        SingleScrambleView(time: 4.20, timeStamp: "2020-07-17 02:51:43", moves: "R U R' U'")
     }
 }

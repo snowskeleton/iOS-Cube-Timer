@@ -22,12 +22,29 @@ struct ContentView: View {
     @State private var permissionToLaunch = false
     @State private var buttonImage = "start"
     @State var scramble: String
+    
+    var avg12: NSFetchRequest<NSFetchRequestResult> {
+        let allSolves = NSFetchRequest<NSFetchRequestResult>(entityName: "Solve")
+        let dateSort = NSSortDescriptor(key: "timestamp", ascending: true)
+        allSolves.sortDescriptors = [dateSort]
+        
+
+//        var counter: Int = 0
+//        var avg: Double = 0.0
+//        ForEach(allSolves, id: \.timeStamp) { solve in
+//            avg = avg + solve.time!
+//        }
+        
+        return allSolves
+        
+    }
 
 
     var body: some View {
         VStack {
             TopMenuView()
 
+            Text("\(avg12)")
             Button(action: {
                 self.scramble = self.generateScramble()
             }) {
