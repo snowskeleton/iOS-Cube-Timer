@@ -16,7 +16,7 @@ struct ResultsView: View {
         NavigationView {
             List {
                 ForEach(solves, id: \.moves) { solve in
-                    SingleScrambleView(time: solve.time, timeStamp: "\(solve.timestamp!)", moves: solve.moves ?? "R U R' U'")
+                    SingleScrambleView(time: solve.time, timeStamp: "\((solve.timestamp != nil ? solve.timestamp : nil))", moves: solve.moves ?? "R U R' U'")
                 }
                 .onDelete { indexSet in
                     let deleteItem = self.solves[indexSet.first!]
